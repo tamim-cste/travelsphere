@@ -1,0 +1,301 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f8f9ff;
+    color: #1a1a2e;
+}
+
+/* ── NAV ── */
+nav {
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    height: 56px;
+    background: white;
+    border-bottom: 1px solid #eee;
+    gap: 2rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+nav a:first-child {
+    font-weight: 700;
+    color: #6c63ff;
+    margin-right: auto;
+    font-size: 1.1rem;
+}
+
+nav a.active { color: #6c63ff; font-weight: 600; }
+
+.nav-right { margin-left: auto; }
+
+.nav-right a {
+    background: #6c63ff;
+    color: white !important;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+/* ── HERO ── */
+.hero {
+    background: linear-gradient(135deg, #6c63ff 0%, #3b2f8f 100%);
+    color: white;
+    padding: 4rem 2rem;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 100%;
+}
+
+.hero h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.hero p {
+    opacity: 0.85;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.search-wrapper {
+    position: relative;
+    max-width: 420px;
+}
+
+.search-wrapper label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.9;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    outline: none;
+    color: #1a1a2e;
+}
+
+/* ── SEARCH SUGGESTIONS ── */
+#search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 100;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #1a1a2e;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:hover { background: #f5f4ff; }
+
+/* ── SECTIONS ── */
+.section {
+    padding: 2.5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1a1a2e;
+}
+
+/* ── COUNTRY GRID ── */
+.country-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.country-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+}
+
+.country-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.country-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+}
+
+.country-card-body {
+    padding: 10px 12px;
+}
+
+.country-card-body h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.country-card-body p {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* ── ATTRACTIONS LIST ── */
+.attraction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.attraction-item {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.attraction-item span.kind {
+    font-size: 0.75rem;
+    color: #888;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+
+/* ── PAGE HEADER ── */
+.page-header {
+    background: #f0f0f8;
+    padding: 2rem;
+    border-bottom: 1px solid #e0e0ef;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.page-header p {
+    color: #666;
+    margin-top: 4px;
+    font-size: 0.9rem;
+}
+
+/* ── SEARCH BAR BOX ── */
+.search-bar-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1.2rem 2rem;
+    background: white;
+    border: 1px solid #e5e5f0;
+    margin: 1.5rem 2rem;
+    border-radius: 10px;
+    align-items: flex-end;
+}
+
+.search-field, .region-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-field label, .region-field label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: #888;
+    font-weight: 600;
+}
+
+.search-field input, .region-field select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    min-width: 180px;
+}
+
+/* ── COUNTRY GRID LIST ── */
+.country-grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 0 2rem 2rem;
+}
+
+.country-card-detail {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+    display: block;
+}
+
+.country-card-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.card-flag img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+.card-info {
+    padding: 12px 16px;
+}
+
+.card-info h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.card-info p {
+    font-size: 0.82rem;
+    color: #555;
+    margin-bottom: 3px;
+}

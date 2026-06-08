@@ -25,4 +25,5 @@ func init() {
 
     // SSR Routes 
     web.Router("/", &controllers.HomeController{})
+    web.Router("/countries", &controllers.CountryController{})
 }

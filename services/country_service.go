@@ -73,6 +73,66 @@ func transformCountries(raw []map[string]interface{}) []models.Country {
 
 
 
+
+// Fetch all countries
+
+func GetAllCountries() ([]models.Country, error) {
+    url := restCountriesBase + "/all?fields=name,capital,population,flags,currencies,languages,region"
+    return fetchAndTransform(url)
+}
+
+// Search + Region filter
+func SearchCountries(search, region string) ([]models.Country, error) {
+    all, err := GetAllCountries()
+    if err != nil {
+        return nil, err
+    }
+
+    var result []models.Country
+    search = strings.ToLower(search)
+
+    for _, c := range all {
+        // Region filter
+        if region != "" && strings.ToLower(c.Region) != strings.ToLower(region) {
+            continue
+        }
+        if search != "" {
+            if !strings.Contains(strings.ToLower(c.Name), search) &&
+                !strings.Contains(strings.ToLower(c.Capital), search) {
+                continue
+            }
+        }
+        result = append(result, c)
+    }
+    return result, nil
+}
+
+// Reusable helper — fetch + transform
+func fetchAndTransform(url string) ([]models.Country, error) {
+    resp, err := http.Get(url)
+    if err != nil {
+        return nil, fmt.Errorf("API call failed: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != 200 {
+        return nil, fmt.Errorf("API status: %d", resp.StatusCode)
+    }
+
+    var raw []map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+        return nil, err
+    }
+    return transformCountries(raw), nil
+}
+
+
+
+
+
+
+
+
 func GetFeaturedCountries() ([]models.Country, error) {
     
     url := restCountriesBase + "/region/asia?fields=name,capital,population,flags,currencies,languages,region"
