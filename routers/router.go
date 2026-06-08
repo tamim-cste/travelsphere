@@ -1,20 +1,26 @@
 package routers
 
 import (
-    "travelsphere/controllers"
-
-    beego "github.com/beego/beego/v2/server/web"
+    "log"
+    "time"
+    "github.com/beego/beego/v2/server/web"
+    "github.com/beego/beego/v2/server/web/context"
 )
 
 func init() {
+    // Logging filter 
+    web.InsertFilter("/*", web.BeforeRouter, func(ctx *context.Context) {
+        start := time.Now()
+        //It will show logs after end of request
+        defer func() {
+            log.Printf("[%s] %s — %v",
+                ctx.Request.Method,
+                ctx.Request.URL.Path,
+                time.Since(start),
+            )
+        }()
+    })
 
-    beego.Router("/", &controllers.HomeController{})
-
-    beego.Router("/countries", &controllers.CountryController{}, "get:GetCountries")
-
-    beego.Router("/countries/:slug", &controllers.CountryController{}, "get:GetCountryDetail")
-
-    beego.Router("/wishlist", &controllers.WishlistController{})
-
-    beego.Router("/dashboard", &controllers.DashboardController{})
+    // SSR Routes 
+    web.Router("/", &controllers.HomeController{})
 }
