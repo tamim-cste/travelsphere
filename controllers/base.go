@@ -8,6 +8,6 @@ type BaseController struct {
 
 func (b *BaseController) Prepare() {
     // This section is used for highlighting the active page in Navigation
-    b.Data["AppName"] = "TravelSphere"
+    b.Data["AppName"] = "travelsphere"
     b.Data["CurrentPath"] = b.Ctx.Request.URL.Path
 }

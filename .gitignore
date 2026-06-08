@@ -1,0 +1,24 @@
+# Environment & Config
+.env
+conf/app.conf
+
+# Binary
+travelsphere
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -6,12 +6,12 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    {{template "header.tpl" .}}
-    
+    {{template "partial/header.tpl" .}}
+
     <main>
         {{.LayoutContent}}
     </main>
 
-    {{template "footer.tpl" .}}
+    {{template "partial/footer.tpl" .}}
 </body>
 </html>
