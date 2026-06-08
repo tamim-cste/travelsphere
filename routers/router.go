@@ -5,6 +5,8 @@ import (
     "time"
     "github.com/beego/beego/v2/server/web"
     "github.com/beego/beego/v2/server/web/context"
+
+	"travelsphere/controllers"
 )
 
 func init() {
