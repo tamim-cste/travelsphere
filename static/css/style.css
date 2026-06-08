@@ -299,3 +299,121 @@ nav a.active { color: #6c63ff; font-weight: 600; }
     color: #555;
     margin-bottom: 3px;
 }
+
+
+
+/* ── DESTINATION ── */
+.dest-header {
+    display: flex;
+    gap: 2rem;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 1.5rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.dest-flag img {
+    width: 140px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.region-badge {
+    background: #e8e6ff;
+    color: #6c63ff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.dest-info h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 8px 0 4px;
+}
+
+.subregion { color: #888; font-size: 0.9rem; }
+
+.dest-meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.meta-label {
+    font-size: 0.7rem;
+    color: #aaa;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.wishlist-action {
+    padding: 0 2rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-wishlist {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-wishlist:hover { background: #f5f4ff; }
+
+.dest-body {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    padding: 0 2rem 2rem;
+}
+
+.weather-card, .attractions-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.weather-card h2, .attractions-card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.weather-note {
+    font-size: 0.85rem;
+    color: #666;
+    background: #f8f8f8;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.attr-name { font-weight: 500; font-size: 0.95rem; }
+.attr-kind { font-size: 0.75rem; color: #888; margin-left: 8px; }
+
+/* ── NOT FOUND ── */
+.not-found {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.not-found h1 { font-size: 5rem; color: #6c63ff; }
+.not-found a { color: #6c63ff; }
