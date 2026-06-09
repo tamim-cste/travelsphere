@@ -51,6 +51,14 @@ func transformCountries(raw []map[string]interface{}) []models.Country {
             }
         }
 
+
+        // Coordinates
+        if latlng, ok := item["latlng"].([]interface{}); ok && len(latlng) >= 2 {
+            country.Lat, _ = latlng[0].(float64)
+            country.Lon, _ = latlng[1].(float64)
+        }
+
+
       
         if langs, ok := item["languages"].(map[string]interface{}); ok {
             var langList []string
@@ -131,11 +139,22 @@ func fetchAndTransform(url string) ([]models.Country, error) {
 
 
 
-
-
 func GetFeaturedCountries() ([]models.Country, error) {
+    url := restCountriesBase + "/region/asia?..."
+    return fetchAndTransform(url) 
+}
+
+
+
+
+
+func GetCountryBySlug(slug string) (*models.Country, error) {
+    // extract country name from slug
+    // "united-states" → "united states"
+    name := strings.ReplaceAll(slug, "-", " ")
     
-    url := restCountriesBase + "/region/asia?fields=name,capital,population,flags,currencies,languages,region"
+    url := restCountriesBase + "/name/" + name + 
+           "?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
     
     resp, err := http.Get(url)
     if err != nil {
@@ -143,14 +162,19 @@ func GetFeaturedCountries() ([]models.Country, error) {
     }
     defer resp.Body.Close()
 
-    if resp.StatusCode != 200 {
-        return nil, fmt.Errorf("API returned status: %d", resp.StatusCode)
+    if resp.StatusCode == 404 {
+        return nil, fmt.Errorf("country not found")
     }
 
     var raw []map[string]interface{}
     if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
-        return nil, fmt.Errorf("JSON decode failed: %w", err)
+        return nil, err
     }
 
-    return transformCountries(raw), nil
+    if len(raw) == 0 {
+        return nil, fmt.Errorf("country not found")
+    }
+
+    countries := transformCountries(raw)
+    return &countries[0], nil
 }

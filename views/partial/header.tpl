@@ -1,6 +1,6 @@
 <header>
     <nav>
-        <a href="/">🌍 TravelSphere</a>
+        <a href="/">TravelSphere</a>
         <a href="/countries" {{if eq .CurrentPath "/countries"}}class="active"{{end}}>
             Explore
         </a>
