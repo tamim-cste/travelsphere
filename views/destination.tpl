@@ -1,4 +1,3 @@
-<!-- Country Header Card -->
 <div class="dest-header">
     <div class="dest-flag">
         <img src="{{.Country.FlagURL}}" alt="{{.Country.Name}}">
@@ -7,7 +6,6 @@
         <span class="region-badge">{{.Country.Region}}</span>
         <h1>{{.Country.Name}}</h1>
         <p class="subregion">{{.Country.Subregion}}</p>
-        
         <div class="dest-meta">
             <div class="meta-item">
                 <span class="meta-label">CAPITAL</span>
@@ -33,42 +31,37 @@
     </div>
 </div>
 
-<!-- Add to Wishlist Button -->
 <div class="wishlist-action">
-    <button class="btn-wishlist" 
-            onclick="addToWishlist('{{.Country.Name}}')">
+    <button class="btn-wishlist" onclick="addToWishlist('{{.Country.Name}}')">
         Add to Wishlist
     </button>
     <div id="wishlist-feedback"></div>
 </div>
 
-<!-- Two column layout -->
 <div class="dest-body">
-    <!-- Weather (left) -->
     <div class="weather-card">
-    <h2>Travel weather</h2>
-    {{if .Weather}}
-    <div class="weather-info">
-    <img src="{{.Weather.Icon}}" alt="weather">
-    <div>
-        <span class="temp">{{.Weather.TempC}}°C</span>
-        <span>{{.Weather.Condition}}</span>
-    </div>
-    <div class="weather-details">
-        <span>💧 {{.Weather.Humidity}}%</span>
-        <span>💨 {{.Weather.WindKph}} km/h</span>
-     </div>
-    </div>
-    {{else}}
+        <h2>Travel weather</h2>
+        {{if .Weather}}
+        <div class="weather-info">
+            <img src="{{.Weather.Icon}}" alt="weather icon">
+            <div>
+                <span class="temp">{{.Weather.TempC}}°C</span>
+                <span class="cond">{{.Weather.Condition}}</span>
+            </div>
+            <div class="weather-details">
+                <span>💧 {{.Weather.Humidity}}%</span>
+                <span>💨 {{.Weather.WindKph}} km/h</span>
+            </div>
+        </div>
+        {{else}}
         <p class="weather-note">
-            Weather data is not available for this time.
+            Weather Data is not available for this time.
         </p>
-    {{end}}
-</div>
+        {{end}}
+    </div>
 
-    <!-- Attractions (right) -->
     <div class="attractions-card">
-        <h2>Attractions & landmarks</h2>
+        <h2>Attractions &amp; landmarks</h2>
         <div class="attraction-list">
             {{range .Attractions}}
             <div class="attraction-item">
@@ -76,7 +69,7 @@
                 <span class="attr-kind">{{.Kinds}}</span>
             </div>
             {{else}}
-            <p>No attractions found</p>
+            <p style="color:#888;font-size:0.9rem">No attractions found for this location.</p>
             {{end}}
         </div>
     </div>
