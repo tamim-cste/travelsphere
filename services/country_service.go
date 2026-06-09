@@ -4,8 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"sort"
 	"strings"
 	"travelsphere/models"
+)
+
+var (
+	httpGet = http.Get
+	getenv  = os.Getenv
 )
 
 const restCountriesBase = "https://restcountries.com/v3.1"
@@ -42,19 +49,32 @@ func transformCountries(raw []map[string]interface{}) []models.Country {
 		}
 
 		if currencies, ok := item["currencies"].(map[string]interface{}); ok {
-			for code, val := range currencies {
+			codes := make([]string, 0, len(currencies))
+			for code := range currencies {
+				codes = append(codes, code)
+			}
+			sort.Strings(codes)
+
+			for _, code := range codes {
+				val := currencies[code]
 				if currObj, ok := val.(map[string]interface{}); ok {
 					name, _ := currObj["name"].(string)
 					country.Currency = code + " (" + name + ")"
+					break
 				}
-				break
 			}
 		}
 
 		if langs, ok := item["languages"].(map[string]interface{}); ok {
+			codes := make([]string, 0, len(langs))
+			for code := range langs {
+				codes = append(codes, code)
+			}
+			sort.Strings(codes)
+
 			var langList []string
-			for _, v := range langs {
-				if s, ok := v.(string); ok {
+			for _, code := range codes {
+				if s, ok := langs[code].(string); ok {
 					langList = append(langList, s)
 				}
 			}
@@ -73,9 +93,8 @@ func transformCountries(raw []map[string]interface{}) []models.Country {
 	return countries
 }
 
-
 func fetchAndTransform(url string) ([]models.Country, error) {
-	resp, err := http.Get(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
@@ -92,9 +111,8 @@ func fetchAndTransform(url string) ([]models.Country, error) {
 	return transformCountries(raw), nil
 }
 
-
 func GetFeaturedCountries() ([]models.Country, error) {
-	
+
 	names := []string{"united states", "france", "japan", "australia", "brazil", "bangladesh"}
 	var featured []models.Country
 	for _, name := range names {
@@ -109,12 +127,10 @@ func GetFeaturedCountries() ([]models.Country, error) {
 	return featured, nil
 }
 
-
 func GetAllCountries() ([]models.Country, error) {
 	url := restCountriesBase + "/all?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
 	return fetchAndTransform(url)
 }
-
 
 func SearchCountries(search, region string) ([]models.Country, error) {
 	all, err := GetAllCountries()
@@ -140,13 +156,12 @@ func SearchCountries(search, region string) ([]models.Country, error) {
 	return result, nil
 }
 
-
 func GetCountryBySlug(slug string) (*models.Country, error) {
 	name := strings.ReplaceAll(slug, "-", " ")
 	url := restCountriesBase + "/name/" + strings.ReplaceAll(name, " ", "%20") +
 		"?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
 
-	resp, err := http.Get(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
