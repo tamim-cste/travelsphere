@@ -49,16 +49,16 @@ The application uses the following variables:
    WEATHER_API_KEY=your_weatherapi_key_here
    ```
 
-3. Run tests:
+3. Install Depedencies:
 
    ```sh
-   go test ./...
+   go mod tidy
    ```
 
 4. Start the app:
 
    ```sh
-   go run .
+   bee run
    ```
 
 5. Open the app in your browser:
