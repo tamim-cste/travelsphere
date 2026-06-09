@@ -1,22 +1,22 @@
 <div class="auth-wrapper">
     <div class="auth-card">
-        <h1>Sign in</h1>
-        <p class="auth-sub">Use <strong>beta / 1234</strong> to log in.</p>
+        <div class="auth-logo">🌍</div>
+        <h1>Welcome to TravelSphere</h1>
+        <p class="auth-sub">Enter your username to access your wishlist and dashboard.</p>
 
         {{if .Error}}
-        <p class="auth-error">{{.Error}}</p>
+        <div class="auth-error"><span>⚠️</span> {{.Error}}</div>
         {{end}}
 
         <form method="POST" action="/login">
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" placeholder="beta" required>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       placeholder="e.g. beta" required autocomplete="username">
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="••••" required>
-            </div>
-            <button type="submit" class="btn-primary">Login</button>
+            <button type="submit" class="btn-primary">Sign in →</button>
         </form>
+
+        <p class="auth-hint">New user? Just enter any username to get started.</p>
     </div>
 </div>

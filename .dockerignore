@@ -1,0 +1,5 @@
+.git
+.env
+*.out
+coverage.out
+travelsphere_test*

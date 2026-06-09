@@ -1,6 +1,8 @@
 package controllers
 
-// AuthController handles login and logout
+import "travelsphere/services"
+
+// AuthController handles /login and /logout
 type AuthController struct {
 	BaseController
 }
@@ -12,25 +14,24 @@ func (a *AuthController) Get() {
 	a.TplName = "login.tpl"
 }
 
-// Post processes login form submission
+// Post processes login — username only, no password required
 func (a *AuthController) Post() {
 	username := a.GetString("username")
-	password := a.GetString("password")
 
-	// Simple hardcoded check — no database needed for this assessment
-	if username == "beta" && password == "1234" {
-		a.SetSession("username", username)
-		a.Redirect("/dashboard", 302)
+	user, err := services.GetOrCreateUser(username)
+	if err != nil {
+		a.Data["Title"] = "Login"
+		a.Data["Error"] = err.Error()
+		a.Layout = "layout/main.tpl"
+		a.TplName = "login.tpl"
 		return
 	}
 
-	a.Data["Title"] = "Login"
-	a.Data["Error"] = "Invalid username or password"
-	a.Layout = "layout/main.tpl"
-	a.TplName = "login.tpl"
+	a.SetSession("username", user.Username)
+	a.Redirect("/dashboard", 302)
 }
 
-// Logout clears the session
+// LogoutController handles GET /logout
 type LogoutController struct {
 	BaseController
 }
