@@ -36,6 +36,11 @@ The application uses the following variables:
 
 ## Local setup
 
+0. Clone the repo:
+    ```sh
+   git clone https://github.com/tamim-cste/travelsphere
+   ```
+
 1. Copy the example environment file:
 
    ```sh
