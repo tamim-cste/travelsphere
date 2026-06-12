@@ -82,16 +82,15 @@ Pull from docker hub
 docker pull tamim99/travelsphere
 ```
 
-### Build locally
 
-```sh
-docker build -t travelsphere:local .
-```
 
 ### Run the container
 
 Use your local environment variables at runtime:
 
 ```sh
-docker run --rm -p 8080:8080 --env-file .env travelsphere:local
+docker run -p 8080:8080 \
+  -e RESTCOUNTRIES_KEY=your_api_key \
+  -e OPENTRIPMAP_KEY=your_api_key \
+  tamim99/travelsphere:latest
 ```
