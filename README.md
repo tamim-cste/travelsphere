@@ -21,6 +21,7 @@ Create a local `.env` file from the example file before running the app:
 
 ```sh
 cp .env.example .env
+cp app.conf.example app.conf
 ```
 
 The application uses the following variables:
@@ -41,15 +42,17 @@ The application uses the following variables:
    git clone https://github.com/tamim-cste/travelsphere
    ```
 
-1. Copy the example environment file:
+1. Copy the example environment file and configuration file:
 
    ```sh
    cp .env.example .env
+   cp app.conf.example app.conf
    ```
 
 2. Fill in the required values in `.env`:
 
    ```env
+   RESTCOUNTRIES_KEY=your_restcountries_key_here
    OPENTRIPMAP_KEY=your_opentripmap_key_here
    WEATHER_API_KEY=your_weatherapi_key_here
    ```

@@ -8,29 +8,27 @@ import (
 func TestTransformCountriesEmpty(t *testing.T) {
 	result := transformCountries([]map[string]interface{}{})
 	if len(result) != 0 {
-		t.Errorf("expected empty result, got %d", len(result))
+		t.Errorf("expected empty, got %d", len(result))
 	}
 }
 
-func TestTransformCountriesFullFields(t *testing.T) {
+func TestTransformCountriesV5Fields(t *testing.T) {
 	raw := []map[string]interface{}{
 		{
-			"name":       map[string]interface{}{"common": "Bangladesh"},
-			"capital":    []interface{}{"Dhaka"},
-			"population": float64(170000000),
+			"names":      map[string]interface{}{"common": "Bangladesh"},
+			"capitals":   []interface{}{map[string]interface{}{"name": "Dhaka"}},
+			"population": float64(175423000),
 			"region":     "Asia",
 			"subregion":  "Southern Asia",
-			"flags":      map[string]interface{}{"svg": "https://flag.example.com/bd.svg"},
-			"currencies": map[string]interface{}{
-				"BDT": map[string]interface{}{"name": "Bangladeshi taka"},
-			},
-			"languages": map[string]interface{}{"ben": "Bengali"},
-			"latlng":    []interface{}{float64(23.7), float64(90.4)},
+			"flag":       map[string]interface{}{"url_svg": "https://flags.example.com/bd.svg"},
+			"currencies": []interface{}{map[string]interface{}{"code": "BDT", "name": "Bangladeshi taka"}},
+			"languages":  []interface{}{map[string]interface{}{"name": "Bengali"}},
+			"coordinates": map[string]interface{}{"lat": float64(24.0), "lng": float64(90.0)},
 		},
 	}
 	countries := transformCountries(raw)
 	if len(countries) != 1 {
-		t.Fatalf("expected 1 country, got %d", len(countries))
+		t.Fatalf("expected 1, got %d", len(countries))
 	}
 	c := countries[0]
 	if c.Name != "Bangladesh" {
@@ -39,8 +37,8 @@ func TestTransformCountriesFullFields(t *testing.T) {
 	if c.Capital != "Dhaka" {
 		t.Errorf("expected Dhaka, got %s", c.Capital)
 	}
-	if c.Population != 170000000 {
-		t.Errorf("expected 170000000, got %d", c.Population)
+	if c.Population != 175423000 {
+		t.Errorf("expected 175423000, got %d", c.Population)
 	}
 	if c.Region != "Asia" {
 		t.Errorf("expected Asia, got %s", c.Region)
@@ -51,23 +49,23 @@ func TestTransformCountriesFullFields(t *testing.T) {
 	if c.Slug != "bangladesh" {
 		t.Errorf("expected slug bangladesh, got %s", c.Slug)
 	}
-	if c.Lat != 23.7 {
-		t.Errorf("expected lat 23.7, got %f", c.Lat)
-	}
-	if c.Lon != 90.4 {
-		t.Errorf("expected lon 90.4, got %f", c.Lon)
-	}
 	if !strings.Contains(c.Currency, "BDT") {
-		t.Errorf("expected currency to contain BDT, got %s", c.Currency)
+		t.Errorf("expected BDT in currency, got %s", c.Currency)
 	}
 	if c.Languages != "Bengali" {
 		t.Errorf("expected Bengali, got %s", c.Languages)
 	}
+	if c.Lat != 24.0 || c.Lon != 90.0 {
+		t.Errorf("expected lat=24, lon=90, got %f, %f", c.Lat, c.Lon)
+	}
+	if c.FlagURL != "https://flags.example.com/bd.svg" {
+		t.Errorf("expected flag URL, got %s", c.FlagURL)
+	}
 }
 
-func TestTransformCountriesSlugSpaces(t *testing.T) {
+func TestTransformCountriesSlug(t *testing.T) {
 	raw := []map[string]interface{}{
-		{"name": map[string]interface{}{"common": "United States"}},
+		{"names": map[string]interface{}{"common": "United States"}},
 	}
 	c := transformCountries(raw)
 	if c[0].Slug != "united-states" {
@@ -77,7 +75,7 @@ func TestTransformCountriesSlugSpaces(t *testing.T) {
 
 func TestTransformCountriesNoCapital(t *testing.T) {
 	raw := []map[string]interface{}{
-		{"name": map[string]interface{}{"common": "Antarctica"}},
+		{"names": map[string]interface{}{"common": "Antarctica"}},
 	}
 	c := transformCountries(raw)
 	if c[0].Capital != "" {
@@ -88,8 +86,12 @@ func TestTransformCountriesNoCapital(t *testing.T) {
 func TestTransformCountriesMultipleLanguages(t *testing.T) {
 	raw := []map[string]interface{}{
 		{
-			"name":      map[string]interface{}{"common": "Switzerland"},
-			"languages": map[string]interface{}{"fra": "French", "deu": "German", "ita": "Italian"},
+			"names": map[string]interface{}{"common": "Switzerland"},
+			"languages": []interface{}{
+				map[string]interface{}{"name": "French"},
+				map[string]interface{}{"name": "German"},
+				map[string]interface{}{"name": "Italian"},
+			},
 		},
 	}
 	c := transformCountries(raw)
@@ -98,44 +100,81 @@ func TestTransformCountriesMultipleLanguages(t *testing.T) {
 	}
 }
 
-func TestTransformCountriesNoFlags(t *testing.T) {
+func TestTransformCountriesSkipsEmptyName(t *testing.T) {
 	raw := []map[string]interface{}{
-		{"name": map[string]interface{}{"common": "Test"}},
+		{"population": float64(100)}, // no names field
 	}
-	c := transformCountries(raw)
-	if c[0].FlagURL != "" {
-		t.Errorf("expected empty flag URL, got %s", c[0].FlagURL)
+	result := transformCountries(raw)
+	if len(result) != 0 {
+		t.Errorf("expected empty result for item without name, got %d", len(result))
 	}
 }
 
-func TestSearchCountriesFilterLogic(t *testing.T) {
-	// Test the filter logic directly using transformCountries output
+func TestTransformCountriesMultiple(t *testing.T) {
 	raw := []map[string]interface{}{
-		{"name": map[string]interface{}{"common": "Bangladesh"}, "capital": []interface{}{"Dhaka"}, "region": "Asia"},
-		{"name": map[string]interface{}{"common": "France"}, "capital": []interface{}{"Paris"}, "region": "Europe"},
-		{"name": map[string]interface{}{"common": "Japan"}, "capital": []interface{}{"Tokyo"}, "region": "Asia"},
+		{"names": map[string]interface{}{"common": "France"}},
+		{"names": map[string]interface{}{"common": "Japan"}},
+		{"names": map[string]interface{}{"common": "Brazil"}},
 	}
-	all := transformCountries(raw)
+	result := transformCountries(raw)
+	if len(result) != 3 {
+		t.Errorf("expected 3, got %d", len(result))
+	}
+}
 
-	// filter by region Asia
-	var asiaOnly []string
-	for _, c := range all {
+func TestDoGetNoKey(t *testing.T) {
+	origGetenv := getenv
+	getenv = func(key string) string { return "" }
+	defer func() { getenv = origGetenv }()
+
+	_, err := doGet("https://example.com")
+	if err == nil {
+		t.Error("expected error when key missing")
+	}
+	if !strings.Contains(err.Error(), "RESTCOUNTRIES_KEY") {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+}
+
+func TestRestCountriesKeyReadsFromEnv(t *testing.T) {
+	origGetenv := getenv
+	getenv = func(key string) string {
+		if key == "RESTCOUNTRIES_KEY" {
+			return "test-key"
+		}
+		return ""
+	}
+	defer func() { getenv = origGetenv }()
+
+	if restCountriesKey() != "test-key" {
+		t.Error("expected test-key")
+	}
+}
+
+func TestRestCountriesKeyEmptyWhenNotSet(t *testing.T) {
+	origGetenv := getenv
+	getenv = func(key string) string { return "" }
+	defer func() { getenv = origGetenv }()
+
+	if restCountriesKey() != "" {
+		t.Error("expected empty key")
+	}
+}
+
+func TestRegionFilterLogic(t *testing.T) {
+	countries := transformCountries([]map[string]interface{}{
+		{"names": map[string]interface{}{"common": "Bangladesh"}, "region": "Asia"},
+		{"names": map[string]interface{}{"common": "France"}, "region": "Europe"},
+		{"names": map[string]interface{}{"common": "Japan"}, "region": "Asia"},
+	})
+
+	var asia []string
+	for _, c := range countries {
 		if strings.EqualFold(c.Region, "Asia") {
-			asiaOnly = append(asiaOnly, c.Name)
+			asia = append(asia, c.Name)
 		}
 	}
-	if len(asiaOnly) != 2 {
-		t.Errorf("expected 2 Asia countries, got %d", len(asiaOnly))
-	}
-
-	// filter by name search
-	var found []string
-	for _, c := range all {
-		if strings.Contains(strings.ToLower(c.Name), "ban") {
-			found = append(found, c.Name)
-		}
-	}
-	if len(found) != 1 || found[0] != "Bangladesh" {
-		t.Errorf("expected Bangladesh in search results, got %v", found)
+	if len(asia) != 2 {
+		t.Errorf("expected 2 Asia countries, got %d", len(asia))
 	}
 }

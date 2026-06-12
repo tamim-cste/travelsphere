@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sort"
 	"strings"
 	"travelsphere/models"
 )
@@ -15,86 +14,109 @@ var (
 	getenv  = os.Getenv
 )
 
-const restCountriesBase = "https://restcountries.com/v3.1"
+const restCountriesBase = "https://api.restcountries.com/countries/v5"
 
-// transformCountries converts raw REST Countries API response into []models.Country
+func restCountriesKey() string {
+	return getenv("RESTCOUNTRIES_KEY")
+}
+
+// doGet performs an authenticated GET to REST Countries v5
+func doGet(url string) (*http.Response, error) {
+	key := restCountriesKey()
+	if key == "" {
+		return nil, fmt.Errorf("RESTCOUNTRIES_KEY not set in .env")
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+key)
+	return http.DefaultClient.Do(req)
+}
+
+// v5Response mirrors the top-level wrapper: {"data":{"objects":[...]}}
+type v5Response struct {
+	Data struct {
+		Objects []map[string]interface{} `json:"objects"`
+	} `json:"data"`
+}
+
+// transformCountries converts v5 objects into []models.Country
 func transformCountries(raw []map[string]interface{}) []models.Country {
 	var countries []models.Country
 
 	for _, item := range raw {
 		country := models.Country{}
 
-		if nameObj, ok := item["name"].(map[string]interface{}); ok {
-			country.Name, _ = nameObj["common"].(string)
+		// names.common
+		if names, ok := item["names"].(map[string]interface{}); ok {
+			country.Name, _ = names["common"].(string)
 		}
 
-		if capitals, ok := item["capital"].([]interface{}); ok && len(capitals) > 0 {
-			country.Capital, _ = capitals[0].(string)
+		// capitals[0].name
+		if caps, ok := item["capitals"].([]interface{}); ok && len(caps) > 0 {
+			if cap0, ok := caps[0].(map[string]interface{}); ok {
+				country.Capital, _ = cap0["name"].(string)
+			}
 		}
 
+		// population
 		if pop, ok := item["population"].(float64); ok {
 			country.Population = int64(pop)
 		}
 
-		if region, ok := item["region"].(string); ok {
-			country.Region = region
+		// region / subregion
+		if r, ok := item["region"].(string); ok {
+			country.Region = r
+		}
+		if sr, ok := item["subregion"].(string); ok {
+			country.Subregion = sr
 		}
 
-		if subregion, ok := item["subregion"].(string); ok {
-			country.Subregion = subregion
+		// flag.url_svg
+		if flag, ok := item["flag"].(map[string]interface{}); ok {
+			country.FlagURL, _ = flag["url_svg"].(string)
 		}
 
-		if flags, ok := item["flags"].(map[string]interface{}); ok {
-			country.FlagURL, _ = flags["svg"].(string)
-		}
-
-		if currencies, ok := item["currencies"].(map[string]interface{}); ok {
-			codes := make([]string, 0, len(currencies))
-			for code := range currencies {
-				codes = append(codes, code)
-			}
-			sort.Strings(codes)
-
-			for _, code := range codes {
-				val := currencies[code]
-				if currObj, ok := val.(map[string]interface{}); ok {
-					name, _ := currObj["name"].(string)
-					country.Currency = code + " (" + name + ")"
-					break
-				}
+		// currencies[0] → "BDT (Bangladeshi taka)"
+		if currs, ok := item["currencies"].([]interface{}); ok && len(currs) > 0 {
+			if c0, ok := currs[0].(map[string]interface{}); ok {
+				code, _ := c0["code"].(string)
+				name, _ := c0["name"].(string)
+				country.Currency = code + " (" + name + ")"
 			}
 		}
 
-		if langs, ok := item["languages"].(map[string]interface{}); ok {
-			codes := make([]string, 0, len(langs))
-			for code := range langs {
-				codes = append(codes, code)
-			}
-			sort.Strings(codes)
-
+		// languages[] → "Bengali, ..."
+		if langs, ok := item["languages"].([]interface{}); ok {
 			var langList []string
-			for _, code := range codes {
-				if s, ok := langs[code].(string); ok {
-					langList = append(langList, s)
+			for _, l := range langs {
+				if lmap, ok := l.(map[string]interface{}); ok {
+					if name, ok := lmap["name"].(string); ok && name != "" {
+						langList = append(langList, name)
+					}
 				}
 			}
 			country.Languages = strings.Join(langList, ", ")
 		}
 
-		if latlng, ok := item["latlng"].([]interface{}); ok && len(latlng) >= 2 {
-			country.Lat, _ = latlng[0].(float64)
-			country.Lon, _ = latlng[1].(float64)
+		// coordinates.lat / coordinates.lng
+		if coords, ok := item["coordinates"].(map[string]interface{}); ok {
+			country.Lat, _ = coords["lat"].(float64)
+			country.Lon, _ = coords["lng"].(float64)
 		}
 
 		country.Slug = strings.ToLower(strings.ReplaceAll(country.Name, " ", "-"))
-		countries = append(countries, country)
+		if country.Name != "" {
+			countries = append(countries, country)
+		}
 	}
-
 	return countries
 }
 
+// fetchAndTransform does GET → unwrap data.objects → transform
 func fetchAndTransform(url string) ([]models.Country, error) {
-	resp, err := httpGet(url)
+	resp, err := doGet(url)
 	if err != nil {
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
@@ -104,21 +126,19 @@ func fetchAndTransform(url string) ([]models.Country, error) {
 		return nil, fmt.Errorf("API status: %d", resp.StatusCode)
 	}
 
-	var raw []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+	var wrapper v5Response
+	if err := json.NewDecoder(resp.Body).Decode(&wrapper); err != nil {
 		return nil, err
 	}
-	return transformCountries(raw), nil
+	return transformCountries(wrapper.Data.Objects), nil
 }
 
+// GetFeaturedCountries returns a curated list for the home page
 func GetFeaturedCountries() ([]models.Country, error) {
-
-	names := []string{"united states", "france", "japan", "australia", "brazil", "bangladesh"}
+	names := []string{"united+states", "france", "japan", "australia", "brazil", "bangladesh"}
 	var featured []models.Country
 	for _, name := range names {
-		url := restCountriesBase + "/name/" + strings.ReplaceAll(name, " ", "%20") +
-			"?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
-		countries, err := fetchAndTransform(url)
+		countries, err := fetchAndTransform(restCountriesBase + "?q=" + name)
 		if err != nil || len(countries) == 0 {
 			continue
 		}
@@ -127,41 +147,47 @@ func GetFeaturedCountries() ([]models.Country, error) {
 	return featured, nil
 }
 
+// GetAllCountries returns all countries
 func GetAllCountries() ([]models.Country, error) {
-	url := restCountriesBase + "/all?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
-	return fetchAndTransform(url)
+    
+    return fetchAndTransform(restCountriesBase)
 }
 
+// SearchCountries filters by name/capital and optional region
 func SearchCountries(search, region string) ([]models.Country, error) {
-	all, err := GetAllCountries()
-	if err != nil {
-		return nil, err
+	var all []models.Country
+	var err error
+
+	if search != "" {
+		q := strings.ReplaceAll(strings.TrimSpace(search), " ", "+")
+		all, err = fetchAndTransform(restCountriesBase + "?q=" + q)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		all, err = GetAllCountries()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	search = strings.ToLower(search)
-	var result []models.Country
+	if region == "" {
+		return all, nil
+	}
 
+	var result []models.Country
 	for _, c := range all {
-		if region != "" && !strings.EqualFold(c.Region, region) {
-			continue
+		if strings.EqualFold(c.Region, region) {
+			result = append(result, c)
 		}
-		if search != "" {
-			if !strings.Contains(strings.ToLower(c.Name), search) &&
-				!strings.Contains(strings.ToLower(c.Capital), search) {
-				continue
-			}
-		}
-		result = append(result, c)
 	}
 	return result, nil
 }
 
+// GetCountryBySlug finds a single country by URL slug e.g. "united-states"
 func GetCountryBySlug(slug string) (*models.Country, error) {
-	name := strings.ReplaceAll(slug, "-", " ")
-	url := restCountriesBase + "/name/" + strings.ReplaceAll(name, " ", "%20") +
-		"?fields=name,capital,population,flags,currencies,languages,region,subregion,latlng"
-
-	resp, err := httpGet(url)
+	q := strings.ReplaceAll(slug, "-", "+")
+	resp, err := doGet(restCountriesBase + "?q=" + q)
 	if err != nil {
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
@@ -170,15 +196,21 @@ func GetCountryBySlug(slug string) (*models.Country, error) {
 	if resp.StatusCode == 404 {
 		return nil, fmt.Errorf("country not found")
 	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API status: %d", resp.StatusCode)
+	}
 
-	var raw []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+	var wrapper v5Response
+	if err := json.NewDecoder(resp.Body).Decode(&wrapper); err != nil {
 		return nil, err
 	}
-	if len(raw) == 0 {
+	if len(wrapper.Data.Objects) == 0 {
 		return nil, fmt.Errorf("country not found")
 	}
 
-	countries := transformCountries(raw)
+	countries := transformCountries(wrapper.Data.Objects)
+	if len(countries) == 0 {
+		return nil, fmt.Errorf("country not found")
+	}
 	return &countries[0], nil
 }

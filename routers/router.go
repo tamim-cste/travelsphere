@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	// Logging filter — logs method, path, and duration for every request
+	// Logging filter
 	web.InsertFilter("/*", web.BeforeRouter, func(ctx *context.Context) {
 		start := time.Now()
 		defer func() {
@@ -26,8 +26,9 @@ func init() {
 	web.Router("/", &controllers.HomeController{})
 	web.Router("/countries", &controllers.CountryController{}, "get:Get")
 	web.Router("/countries/:slug", &controllers.CountryController{}, "get:GetOne")
-	web.Router("/login", &controllers.AuthController{})
-	web.Router("/logout", &controllers.LogoutController{})
+	// login must handle both GET (show form) and POST (submit form)
+	web.Router("/login", &controllers.AuthController{}, "get:Get;post:Post")
+	web.Router("/logout", &controllers.LogoutController{}, "get:Get")
 	web.Router("/wishlist", &controllers.WishlistController{}, "get:Get")
 	web.Router("/dashboard", &controllers.DashboardController{}, "get:Get")
 }
